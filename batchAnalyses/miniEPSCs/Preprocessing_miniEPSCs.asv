@@ -1,0 +1,116 @@
+%Load the cell list
+cellListPath = 'C:\Users\mrsco\Box\DataAndAnalysis\labData\OKR\batch\cellList_OKR.mat';
+load(cellListPath)
+responseMagnitudeThreshold = 0.5;
+recordingType = 'Excitation';
+
+%print out a list of all cells that have the mini analysis but haven't been
+%analyzed yet.
+priorityOrder_1 = {'MiniPSCs'}; %first field name should be one of these. Priority is in given order
+priorityOrder_2 = {recordingType}; %AS OF NOW YOU MUST MANUALLY CHOOSE EXCITATION OR INHIBITION AND RERUN FOR BOTH... child field name should be one of these. Priority is in given order
+mustHave_1 = [];
+mustHave_2 = {};
+cantHave_1 = [];
+cantHave_2 = {'Potassium'}; %avoid anything with these tags
+rigMandates = []; %no rig mandates
+
+%% Find cells that need preprocessing
+needToAnalyze = {};
+needToAnalyzeIndices = [];
+for i = 1:size(cellList, 1)
+    struct_i = cellList{i, 2};
+    [loc, pass, analysisName] = getLoc(struct_i, priorityOrder_1, mustHave_1, cantHave_1, priorityOrder_2, mustHave_2, cantHave_2, rigMandates);
+    if pass
+        continue
+    end
+    
+    %ask if this analysis has been performed already
+    if isfield(loc.Analysis_Results, 'preprocessingComplete')
+        %continue
+    end
+    
+    cellID = struct_i.cellID;
+    
+    needToAnalyze{end+1} = cellID;
+    needToAnalyzeIndices(end+1) = i;
+end
+%ask user which cells they would like to analyze
+[indx, tf] = listdlg('ListString', needToAnalyze, 'Name', 'Select Cells to Analyze', 'SelectionMode', 'multiple');
+if ~tf
+    return
+end
+
+%% Preprocess the selected cells
+for i = 1:numel(indx)
+    cellID = needToAnalyze{indx(i)};
+    location = needToAnalyzeIndices(indx(i));
+    
+    disp(['Preprocessing ' cellID])
+    
+    %get the structure from cellList
+    struct_i = cellList{location, 2};
+    [loc, pass, analysisName] = getLoc(struct_i, priorityOrder_1, mustHave_1, cantHave_1, priorityOrder_2, mustHave_2, cantHave_2, rigMandates);
+    
+    %get the pretime and sample rate
+    preTime = loc.meta.preTime;
+    SR = loc.meta.sampleRate;
+    
+    epochNumbers = loc.Analysis_Results.thresholdingResults.usableEpochNumbers;
+    
+    %load the clarinet export for full traces:
+    
+    cellDataPath = struct_i.fileLocation;
+    slashes = strfind(cellDataPath, '\');
+    clarinetExportPath = [cellDataPath(1:slashes(end-1)) cellID '_ClarinetExport.mat'];
+    load(clarinetExportPath) %loads struct named epochs
+    
+    %initialize the matrix that will hold all the responses
+    usableSecondsPerEpoch = floor(preTime/1000);
+    allResponses = zeros(numel(epochNumbers)*usableSecondsPerEpoch, SR);
+    
+    %process the data and fill the matrix
+    highCuttoff = 100; %100hz cuttoff
+    w = waitbar(0, 'Filtering Traces...');
+    for e = 1:numel(epochNumbers)
+        trace = epochs(epochNumbers(e)).epoch;
+        waitbar(e/numel(epochNumbers), w, ['Filtering Trace ' num2str(e)])
+        baseline = trace(1:preTime*SR/1000);
+        normalizedTrace = trace - mean(baseline);
+        
+        lp = lowpass(normalizedTrace, highCuttoff, SR);
+        startIndex = 1;
+        for j = 1:usableSecondsPerEpoch
+            currentIndex = j+(e-1)*usableSecondsPerEpoch; %tracks the overall insertion index for the double for loop
+            fragment = lp(startIndex:startIndex+SR-1); %take 1 second splices of the data
+            allResponses(currentIndex, :) = fragment; %add the fragment into the response matrix
+            startIndex = startIndex + SR;
+        end
+    end
+    close(w);
+    
+    allResponses = allResponses'; %transpose
+    
+    %save the processed traces as a text file
+    saveDir = [cellDataPath 'MiniPSCs\'];
+    if ~(exist(saveDir, 'dir') == 7)
+        mkdir(saveDir);
+    end
+    saveFname = [saveDir, 'miniPSCwaves_', analysisName, '.txt'];
+    save(saveFname, 'allResponses', '-ascii')  % change the name of txt file, either Blue or UV
+    disp(['Saved Data to ' saveFname]);
+    
+    %add final data to loc
+    loc.Analysis_Results.numberOfUsableResponses = size(allResponses, 2);
+    loc.Analysis_Results.preprocessingComplete = 1;
+    
+    %add the structure back to cell list
+    struct_i.Analyses_Completed.MiniPSCs.(analysisName) = loc;
+    cellList{location, 2} = struct_i;
+    
+    %save the updated analysis structure back to its proper location
+    CellParameters = struct_i;
+    save([struct_i.fileLocation, cellID, '_Analysis.mat'], 'CellParameters')
+end
+
+%% Save the cell list
+save(cellListPath, 'cellList')

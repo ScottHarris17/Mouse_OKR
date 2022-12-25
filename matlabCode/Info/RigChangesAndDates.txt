@@ -1,0 +1,9 @@
+***This document specifies if/when changes were made to the recording rig and there corresponding dates. This is important because two experiments that may look identical, could have occured on dates when the rig was in a different configuration - in this case, you probably don't want to analyze these experiments together without validating that the changes don't affect the responses of cells first***
+
+
+20210421
+Added crosshair stimulus to center cells under high power. Can analyze timing of bar stimulus for every day after 4/21/21 because now bars in every direction should cross over the soma at the same time. Prior to this date, they did not always cross over the soma at the same time.
+
+20210817
+LED spot diameter under 10x objective WAS 22.5 cm, but it did not produce uniform light intensity across the entire area.
+Changed LED spot diameter by closing the iris. It is now 13.5cm ~= 300um. Now the spot is uniform, but smaller. You should analyze flash responses before and after this date independently.

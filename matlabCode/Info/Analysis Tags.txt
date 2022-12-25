@@ -1,0 +1,19 @@
+*AVOID: This is a unique tag. It exists in the metadata of a particular experiment/analysis, not in the tag list for the entire cell. Takes a bool value of 0 or 1. If 1, then avoid the particular experiment/analysis for this cell, but you don't have to avoid the entire cell. Filter on this tag in the batch analysis, not using the filtering app.
+
+*Avoid For Tuning: Don't use the tuning curve of this cell for batch analysis
+
+*Preliminary Data: Recording occured before 2021. Do not use for OKR batch analysis. Cells were of all types
+
+*Cesium: Cell attached recording was done using a cesium external solution (i.e. using the internal solution).
+
+*Down Cell: Cell is direction selective and prefers dorsal --> ventral motion across the retina.
+
+*Mislabeled: Labelled via retrograde injection, but probably the wrong cell type. Probably shouldn't include in batch analysis
+
+*MTN: MTN-projecting ganglion cell. Labelled via retrograde injection
+
+*Phasic: Firing Rate to a moving grating stim was phasic (usually in phase with the grating)
+
+*Tonic: Firing Rate to a moving grating stim was tonic sustained
+
+*UP Cell: Cell is direction selective and prefers ventral --> dorsal motion across the retina.

@@ -1,0 +1,9 @@
+$$$Description: This document is used by the dataViewerAPP to generate a list of possible conditions. Do not edit by hand$$$
+
+#Intensity0d1#: ^Used for moving bar stimulus when the bar intensity parameter is set to 0.1 on the projection.^
+#ff#: ^Denotes the typical or best version of a particular stimulus. Changes meaning depending on the stimulus, but usually corresponds to what was considered a "good" recording during the analysis. For the moving bar stimulus it corresponds to a bar moving 10deg per second, 100um width, and 0.5 intensity.^
+#ManyVms#: ^For current clamp recordings. This tag indicates that there are epochs with many different resting membrane potentials all included in the specific analysis. I used this with the moving bar stimulus when I was injecting current to see what tuning curves looked like under depolarized and hyperpolarized conditions.^
+#PDND#: ^Used for moving bar stimulus when the bar is shown only in 2 directions (preferred and null direction) and not the full 8. For example, I used this when doing voltage clamp recordings across contrasts. Also used for moving bar speed var width.^
+#SP10#: ^Used for the moving bar or moving grating stimuli and denotes that the speed of the bar/grating was 10 degrees per second.^
+#W31d25#: ^W tags denote bar width. The 31d25 here denotes a bar width of 31.25 and is used for moving bar speed var stim time among other things^
+#Clear Selected Conditions#: ^Selecting this condition will remove all previously selected conditions and clear the suffix box^
